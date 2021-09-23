@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from logging import getLogger
 
-from leaderboard.models import League, OverUnderLine, Pick, Player, Season, Team
+from leaderboard.models import League, OverUnderLine, Pick, Player, PlayerScore, Season, Team
 
 import openpyxl
 
@@ -45,6 +45,7 @@ class Command(BaseCommand):
             over4 = True if str(sheet['I' + str(row)].value) == 'O' else False
 
             player, created = Player.objects.get_or_create(name=player_name)
+            PlayerScore.objects.get_or_create(player=player, season=season)
 
             player_picks = player_picks + [
                 Pick(player=player, season=season, team=teams_dict[pick1], over=over1),

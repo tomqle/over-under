@@ -25,7 +25,7 @@ class PlayerScoreManager(models.Manager):
 class PlayerScore(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     season = models.ForeignKey('Season', on_delete=models.CASCADE)
-    score = models.DecimalField(max_digits=10, decimal_places=3)
+    score = models.DecimalField(max_digits=10, decimal_places=3, default=0.0)
     objects = PlayerScoreManager()
 
     def calculate(self):

@@ -26,7 +26,7 @@ def get_season_standings(league_name, year):
     return standings
 
 def _bulk_create_league_teams(standings, league_name):
-    league = League.objects.get(name=league_name)
+    league, created = League.objects.get_or_create(name=league_name)
     teams_to_create = []
     teams_to_update = []
     for team_dict in standings:
@@ -41,7 +41,7 @@ def _bulk_create_league_teams(standings, league_name):
     #Team.objects.bulk_update(teams_to_update, ['abbreviation'])
 
 def _bulk_update_league_team_records(standings, team_objs_dict, league_name, year):
-    season = Season.objects.get(name=year, league=League.objects.get(name=league_name))
+    season, created = Season.objects.get_or_create(name=year, league=League.objects.get(name=league_name))
     team_records_to_create = []
     team_records_to_update = []
     for team_dict in standings:
