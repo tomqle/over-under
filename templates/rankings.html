@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h3>Ranking</h3>
+  <table class="table">
+    <tr>
+      <th>Player</th>
+      <th>Score</th>
+    </tr>
+  {% for player_score in player_scores %}
+    <tr>
+      <td>{{ player_score.player.name }}</td>
+      <td>{{ player_score.score }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endblock %}
