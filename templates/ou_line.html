@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h5>Over/Under Line</h5>
+  <table class="table">
+    <tr>
+      <th>Team</th>
+      <th>Line</th>
+    </tr>
+  {% for ou_line in ou_lines %}
+    <tr>
+      <td>{{ ou_line.team.name }}</td>
+      <td>{{ ou_line.line }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+{% endblock %}

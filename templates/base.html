@@ -12,7 +12,29 @@
   <body>
     <div id="sidebar">       
       {% block sidebar %}    
-      <!--h3>Key Data</h3-->
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Over/Under</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/rankings/">Rankings</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/standings/">Standings</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/over_under_lines/">O/U Lines</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/picks/">Picks</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
       {% endblock %}
     </div>
     <div id="content">

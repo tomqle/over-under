@@ -16,11 +16,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from leaderboard.views import HomeView, RankingsView, StandingsView
+from leaderboard.views import DefaultOverUnderLineView, DefaultPicksView, DefaultRankingsView, DefaultStandingsView, HomeView, OverUnderLineView, PicksView, RankingsView, StandingsView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('standings/<str:league>/<str:season>/', StandingsView.as_view(), name='standings'),
-    path('rankings/<str:league>/<str:season>/', RankingsView.as_view(), name='rankings'),
     path('', HomeView.as_view(), name='home'),
+    path('admin/', admin.site.urls),
+    path('over_under_lines/', DefaultOverUnderLineView.as_view(), name='default_over_under_lines'),
+    path('over_under_lines/<str:league>/<str:season>/', OverUnderLineView.as_view(), name='over_under_lines'),
+    path('picks/', DefaultPicksView.as_view(), name='default_picks'),
+    path('picks/<str:league>/<str:season>/', PicksView.as_view(), name='picks'),
+    path('rankings/', DefaultRankingsView.as_view(), name='default_rankings'),
+    path('rankings/<str:league>/<str:season>/', RankingsView.as_view(), name='rankings'),
+    path('standings/', DefaultStandingsView.as_view(), name='default_standings'),
+    path('standings/<str:league>/<str:season>/', StandingsView.as_view(), name='standings'),
 ]
