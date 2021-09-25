@@ -28,6 +28,9 @@ class PlayerScore(models.Model):
     score = models.DecimalField(max_digits=10, decimal_places=3, default=0.0)
     objects = PlayerScoreManager()
 
+    def __str__(self):
+        return f'{self.player} {self.season} {self.score}'
+
     def calculate(self):
         picks = self.player.pick_set.all()
         running_score = 0
@@ -112,6 +115,9 @@ class Pick(models.Model):
     season = models.ForeignKey(Season, on_delete=models.CASCADE)
     over = models.BooleanField()
 
+    def __str__(self):
+        return f'{self.player}: {self.season} {self.team} <{"O" if self.over else "U"}>'
+
     class Meta:
         unique_together = (
             'player',
@@ -123,6 +129,9 @@ class OverUnderLine(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     season = models.ForeignKey(Season, on_delete=models.CASCADE)
     line = models.DecimalField(max_digits=3, decimal_places=1)
+
+    def __str__(self):
+        return f'{self.season} {self.team} {self.line}'
 
     class Meta:
         unique_together = (
