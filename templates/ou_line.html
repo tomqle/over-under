@@ -6,11 +6,13 @@
     <tr>
       <th>Team</th>
       <th>Line</th>
+      <th>Diff</th>
     </tr>
   {% for ou_line in ou_lines %}
     <tr>
       <td>{{ ou_line.team.name }}</td>
       <td>{{ ou_line.line }}</td>
+      <td>{{ ou_line.diff }}</td>
     </tr>
   {% endfor %}
   </table>

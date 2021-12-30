@@ -125,13 +125,34 @@ class Pick(models.Model):
             'season',
         )
 
+class OverUnderLineManager(models.Manager):
+    def update_score(self, season):
+        over_under_lines = OverUnderLine.objects.filter(season=season)
+        ou_lines_to_update = []
+
+        for over_under_line in over_under_lines:
+            over_under_line.calculate()
+            ou_lines_to_update.append(over_under_line)
+
+        self.bulk_update(ou_lines_to_update, ['diff'])
+
 class OverUnderLine(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     season = models.ForeignKey(Season, on_delete=models.CASCADE)
     line = models.DecimalField(max_digits=3, decimal_places=1)
+    diff = models.DecimalField(max_digits=10, decimal_places=3, default=0.0)
+    objects = OverUnderLineManager()
 
     def __str__(self):
         return f'{self.season} {self.team} {self.line}'
+
+    def calculate(self):
+        team_record = TeamRecord.objects.get(team=self.team, season=self.season)
+        games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
+        projected_win_count = float(team_record.win_count) * 16.0 / float(games_played)
+        self.diff = Decimal(projected_win_count) - self.line
+
+        return self.diff
 
     class Meta:
         unique_together = (
