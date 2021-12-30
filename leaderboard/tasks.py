@@ -86,6 +86,10 @@ def _get_season_standings(league_name, year):
         ties = _get_nfl_team_tie(team_standings_rows[i])
         pct = _get_nfl_team_pct(team_standings_rows[i])
 
+        if team_abbr == '':
+            team_abbr = team_name
+            team_name = _get_team_name(team_name_rows[i])
+
         team_standings.append({
             'name': team_name,
             'abbr': team_abbr,
