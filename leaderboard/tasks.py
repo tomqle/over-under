@@ -21,6 +21,8 @@ def get_season_standings(league_name, year):
     season = Season.objects.get(name=year, league=League.objects.get(name=league_name))
     PlayerScore.objects.update_score(season=season)
 
+    OverUnderLine.objects.update_score(season)
+
     print(standings)
 
     return standings
@@ -100,6 +102,7 @@ def _get_season_standings(league_name, year):
         })
 
     return team_standings
+
 
 
 def _get_team_name_rows(html_table):
