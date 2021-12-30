@@ -62,6 +62,7 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
 
             team_record_to_update.win_count = team_dict['w']
             team_record_to_update.lose_count = team_dict['l']
+            team_record_to_update.tie_count = team_dict['t']
 
             team_records_to_update.append(team_record_to_update)
         
