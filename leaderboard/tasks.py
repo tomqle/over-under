@@ -67,7 +67,7 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
             team_records_to_update.append(team_record_to_update)
         
     TeamRecord.objects.bulk_create(team_records_to_create)
-    TeamRecord.objects.bulk_update(team_records_to_update, ['win_count', 'lose_count'])
+    TeamRecord.objects.bulk_update(team_records_to_update, ['win_count', 'lose_count', 'tie_count'])
 
 def _get_season_standings(league_name, year):
     #url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/{year}/group/league'
