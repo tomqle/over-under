@@ -29,7 +29,7 @@ class Command(BaseCommand):
     def _read_player_picks_from_excel(self, sheet):
         player_picks = []
         league = League.objects.get(name='NFL')
-        season = Season.objects.get(name='2021', league=league)
+        season = Season.objects.get(name='2022', league=league)
 
         teams_dict = {team.abbreviation: team for team in Team.objects.filter(league=league)}
 
@@ -62,7 +62,7 @@ class Command(BaseCommand):
     def _read_over_under_line_from_excel(self, sheet):
         over_under_lines = []
         league = League.objects.get(name='NFL')
-        season = Season.objects.get(name='2021', league=league)
+        season = Season.objects.get(name='2022', league=league)
         for row in range(2, sheet.max_row + 1):
             team_abbr = str(sheet['A' + str(row)].value)
             value = str(sheet['B' + str(row)].value)
