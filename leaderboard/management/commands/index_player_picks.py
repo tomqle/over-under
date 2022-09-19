@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from logging import getLogger
+from psycopg2.errors import UniqueViolation
 
 from leaderboard.models import League, OverUnderLine, Pick, Player, PlayerScore, Season, Team
 
@@ -57,7 +58,12 @@ class Command(BaseCommand):
         return player_picks
 
     def _bulk_create_player_picks_from_excel(self, player_picks):
-        Pick.objects.bulk_create(player_picks)
+        try:
+            Pick.objects.bulk_create(player_picks)
+        except UniqueViolation:
+            print("Picks already imported.")
+        except:
+            print("Unknown error with importing picks.")
 
     def _read_over_under_line_from_excel(self, sheet):
         over_under_lines = []
@@ -76,7 +82,12 @@ class Command(BaseCommand):
         return over_under_lines
 
     def _bulk_create_over_under_lines(self, over_under_lines):
-        OverUnderLine.objects.bulk_create(over_under_lines)
+        try:
+            OverUnderLine.objects.bulk_create(over_under_lines)
+        except UniqueViolation:
+            print("Over/Under line already imported.")
+        except:
+            print("Unknown error with importing over/under line.")
 
     #def _generate_key_name_output_workbook(self, keys_dict, file_name):
         #wb = openpyxl.Workbook()
