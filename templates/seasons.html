@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% for season in seasons %}
+    <div class="card" style="width: 18rem;">
+      <a class="card-block stretched-link text-decoration-none" href="{% url 'rankings' league=league.name season=season.name %}">
+        <div class="card-body">
+          <h5 class="card-title">{{ season.name }}</h5>
+        </div>
+      </a>
+    </div>
+{#    <a class="btn btn-primary" href="{% url 'rankings' league=league.name season=season.name %}" role="button">{{ season.name }}</a><br>#}
+  {% endfor %}
+{% endblock %}

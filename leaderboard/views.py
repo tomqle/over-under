@@ -9,11 +9,35 @@ from leaderboard.models import League, OverUnderLine, Pick, Player, PlayerScore,
 
 class HomeView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/rankings/NFL/2021/')
+        return HttpResponseRedirect('/leagues/')
 
 class DefaultRankingsView(View):
     def get(self, request, *args, **kwargs):
         return HttpResponseRedirect('/rankings/NFL/2021/')
+
+class LeaguesView(TemplateView):
+    template_name = "leagues.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['leagues'] = League.objects.all()
+
+        return context
+
+class SeasonsView(TemplateView):
+    template_name = "seasons.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        league = League.objects.get(name=kwargs['league'])
+        seasons = Season.objects.filter(league=league)
+
+        context['league'] = league
+        context['seasons'] = seasons
+
+        return context
 
 class RankingsView(TemplateView):
 

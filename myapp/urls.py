@@ -16,11 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from leaderboard.views import DefaultOverUnderLineView, DefaultPicksView, DefaultRankingsView, DefaultStandingsView, HomeView, OverUnderLineView, PicksView, RankingsView, StandingsView
+from leaderboard.views import DefaultOverUnderLineView, DefaultPicksView, DefaultRankingsView, DefaultStandingsView, HomeView, LeaguesView, OverUnderLineView, PicksView, RankingsView, SeasonsView, StandingsView
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
     path('admin/', admin.site.urls),
+    path('leagues/', LeaguesView.as_view(), name='leagues'),
+    path('leagues/<str:league>/', SeasonsView.as_view(), name='seasons'),
     path('over_under_lines/', DefaultOverUnderLineView.as_view(), name='default_over_under_lines'),
     path('over_under_lines/<str:league>/<str:season>/', OverUnderLineView.as_view(), name='over_under_lines'),
     path('picks/', DefaultPicksView.as_view(), name='default_picks'),

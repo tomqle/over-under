@@ -7,6 +7,10 @@ import requests
 import lxml.html as lh
 
 @shared_task
+def get_nfl_2022_standings():
+    return get_season_standings('NFL', '2022')
+
+@shared_task
 def get_nfl_2021_standings():
     return get_season_standings('NFL', '2021')
 
