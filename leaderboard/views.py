@@ -13,7 +13,7 @@ class HomeView(View):
 
 class DefaultRankingsView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/rankings/NFL/2021/')
+        return HttpResponseRedirect('/rankings/NFL/2022/')
 
 class LeaguesView(TemplateView):
     template_name = "leagues.html"
@@ -56,7 +56,7 @@ class RankingsView(TemplateView):
 
 class DefaultStandingsView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/standings/NFL/2021/')
+        return HttpResponseRedirect('/standings/NFL/2022/')
 
 class StandingsView(TemplateView):
 
@@ -76,7 +76,7 @@ class StandingsView(TemplateView):
 
 class DefaultOverUnderLineView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/over_under_lines/NFL/2021/')
+        return HttpResponseRedirect('/over_under_lines/NFL/2022/')
 
 class OverUnderLineView(TemplateView):
     template_name = "ou_line.html"
@@ -94,7 +94,7 @@ class OverUnderLineView(TemplateView):
 
 class DefaultPicksView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/picks/NFL/2021/')
+        return HttpResponseRedirect('/picks/NFL/2022/')
 
 class PicksView(TemplateView):
     template_name = "picks.html"
