@@ -9,7 +9,7 @@ from leaderboard.models import League, OverUnderLine, Pick, Player, PlayerScore,
 
 class HomeView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/leagues/')
+        return HttpResponseRedirect('/rankings/')
 
 class DefaultRankingsView(View):
     def get(self, request, *args, **kwargs):
