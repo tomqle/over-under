@@ -32,7 +32,7 @@ class PlayerScore(models.Model):
         return f'{self.player} {self.season} {self.score}'
 
     def calculate(self, season):
-        picks = self.player.pick_set.filter(season)
+        picks = self.player.pick_set.filter(season=season)
         running_score = 0
 
         for pick in picks:
