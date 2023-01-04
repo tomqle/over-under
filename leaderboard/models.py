@@ -35,6 +35,8 @@ class PlayerScore(models.Model):
         picks = self.player.pick_set.filter(season=self.season)
         running_score = 0
 
+        print(f'player: {self.player}')
+
         for pick in picks:
             team = pick.team
             team_record = team.teamrecord_set.get(season=self.season)
