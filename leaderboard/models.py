@@ -17,7 +17,7 @@ class PlayerScoreManager(models.Manager):
 
         for score in scores:
             previous_score = score.score
-            if score.calculate() != previous_score:
+            if score.calculate(season) != previous_score:
                 scores_to_update.append(score)
 
         self.bulk_update(scores_to_update, ['score'])
@@ -31,8 +31,8 @@ class PlayerScore(models.Model):
     def __str__(self):
         return f'{self.player} {self.season} {self.score}'
 
-    def calculate(self):
-        picks = self.player.pick_set.all()
+    def calculate(self, season):
+        picks = self.player.pick_set.filter(season)
         running_score = 0
 
         for pick in picks:
