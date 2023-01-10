@@ -41,7 +41,8 @@ class PlayerScore(models.Model):
             team = pick.team
             team_record = team.teamrecord_set.get(season=self.season)
             games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
-            projected_win_count = float(team_record.win_count) * 17.0 / float(games_played)
+            tie_point = float(team_record.tie_count) / 2.0
+            projected_win_count = float(team_record.win_count + tie_point) * 17.0 / float(games_played)
             over_line = self.season.overunderline_set.get(team=team).line
             points = Decimal(projected_win_count) - over_line
             print(f'points: {points}')
