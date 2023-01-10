@@ -152,7 +152,7 @@ class OverUnderLine(models.Model):
     def calculate(self):
         team_record = TeamRecord.objects.get(team=self.team, season=self.season)
         games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
-        projected_win_count = team_record.win_count
+        projected_win_count = team_record.win_count + (float(team_record.tie_count) / 2)
         if games_played != 17:
             projected_win_count = float(team_record.win_count) * 17.0 / float(games_played)
         self.diff = Decimal(projected_win_count) - self.line
