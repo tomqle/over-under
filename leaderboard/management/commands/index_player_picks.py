@@ -29,10 +29,6 @@ class Command(BaseCommand):
 
     def _read_player_picks_from_excel(self, sheet):
         player_picks = []
-        league = League.objects.get(name='NFL')
-        season = Season.objects.get(name='2022', league=league)
-
-        teams_dict = {team.abbreviation: team for team in Team.objects.filter(league=league)}
 
         for row in range(2, sheet.max_row + 1):
             player_name = str(sheet['A' + str(row)].value)
@@ -44,6 +40,12 @@ class Command(BaseCommand):
             over3 = True if str(sheet['G' + str(row)].value) == 'O' else False
             pick4 = str(sheet['H' + str(row)].value)
             over4 = True if str(sheet['I' + str(row)].value) == 'O' else False
+            league_name = str(sheet['J' + str(row)].value)
+            season_year = str(sheet['K' + str(row)].value)
+
+            league = League.objects.get(name=league_name)
+            season = Season.objects.get(name=season_year, league=league)
+            teams_dict = {team.abbreviation: team for team in Team.objects.filter(league=league)}
 
             player, created = Player.objects.get_or_create(name=player_name)
             PlayerScore.objects.get_or_create(player=player, season=season)

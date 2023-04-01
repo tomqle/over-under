@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic.base import TemplateView
 from django.http import HttpResponseRedirect
+from django.db.models import Max
 
 from leaderboard.models import League, OverUnderLine, Pick, Player, PlayerScore, Season, Team, TeamRecord
 
@@ -13,7 +14,14 @@ class HomeView(View):
 
 class DefaultRankingsView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/rankings/NFL/2022/')
+        season_year = Season.objects.aggregate(Max('name')).get('name__max')
+        league_name = ''
+        if Season.objects.filter(name=season_year, league=League.objects.get(name='NFL')).count() > 0:
+            league_name = 'NFL/'
+        elif Season.objects.filter(name=season_year, league=League.objects.get(name='MLB')).count() > 0:
+            league_name = 'MLB/'
+
+        return HttpResponseRedirect('/rankings/' + league_name + season_year )
 
 class LeaguesView(TemplateView):
     template_name = "leagues.html"
