@@ -71,21 +71,24 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
     team_records_to_update = []
     for team_dict in standings:
         if not TeamRecord.objects.filter(team=team_objs_dict[team_dict['name']], season=season):
-            team_records_to_create.append(
-                TeamRecord(
+            team_record = TeamRecord(
                     team=team_objs_dict[team_dict['name']],
                     season=season,
                     win_count=team_dict['w'],
                     lose_count=team_dict['l'],
-                    tie_count=team_dict['t'],
                 )
-            )
+
+            if league_name == 'NFL':
+                team_record.tie_count = tie_count=team_dict['t']
+            
+            team_records_to_create.append(team_record)
         else:
             team_record_to_update = TeamRecord.objects.get(team=team_objs_dict[team_dict['name']], season=season)
 
             team_record_to_update.win_count = team_dict['w']
             team_record_to_update.lose_count = team_dict['l']
-            team_record_to_update.tie_count = team_dict['t']
+            if league_name == 'NFL':
+                team_record_to_update.tie_count = team_dict['t']
 
             team_records_to_update.append(team_record_to_update)
         
