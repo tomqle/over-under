@@ -35,12 +35,6 @@ class PlayerScore(models.Model):
         picks = self.player.pick_set.filter(season=self.season)
         running_score = 0
 
-        games_count = 0.0
-        if(self.season.league.name == 'NFL'):
-            games_count = 17.0
-        elif(self.season.league.name == 'MLB'):
-            games_count = 162.0
-
         print(f'player: {self.player}')
 
         for pick in picks:
@@ -48,7 +42,7 @@ class PlayerScore(models.Model):
             team_record = team.teamrecord_set.get(season=self.season)
             games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
             tie_point = float(team_record.tie_count) / 2.0
-            projected_win_count = float(team_record.win_count + tie_point) * games_count / float(games_played)
+            projected_win_count = float(team_record.win_count + tie_point) * self.season.games_count / float(games_played)
             over_line = self.season.overunderline_set.get(team=team).line
             points = Decimal(projected_win_count) - over_line
             print(f'points: {points}')
@@ -85,6 +79,7 @@ class Team(models.Model):
 
 class League(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    games_count = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -92,6 +87,7 @@ class League(models.Model):
 class Season(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    games_count = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.league.name} {self.name}'
@@ -160,7 +156,7 @@ class OverUnderLine(models.Model):
         games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
         projected_win_count = team_record.win_count + (float(team_record.tie_count) / 2)
         if games_played != 17:
-            projected_win_count = float(team_record.win_count) * 17.0 / float(games_played)
+            projected_win_count = float(team_record.win_count) * self.season.games_count / float(games_played)
         self.diff = Decimal(projected_win_count) - self.line
 
         return self.diff
