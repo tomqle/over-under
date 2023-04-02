@@ -79,7 +79,7 @@ class Team(models.Model):
 
 class League(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    games_count = models.IntegerField(blank=True, null=True)
+    games_count = models.IntegerField()
 
     def __str__(self):
         return self.name
@@ -87,7 +87,7 @@ class League(models.Model):
 class Season(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    games_count = models.IntegerField(blank=True, null=True)
+    games_count = models.IntegerField()
 
     def __str__(self):
         return f'{self.league.name} {self.name}'
