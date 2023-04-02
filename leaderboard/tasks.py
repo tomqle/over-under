@@ -71,24 +71,21 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
     team_records_to_update = []
     for team_dict in standings:
         if not TeamRecord.objects.filter(team=team_objs_dict[team_dict['name']], season=season):
-            team_record = TeamRecord(
+            team_records_to_create.append(
+                TeamRecord(
                     team=team_objs_dict[team_dict['name']],
                     season=season,
                     win_count=team_dict['w'],
                     lose_count=team_dict['l'],
+                    tie_count=team_dict['t'],
                 )
-
-            if league_name == 'NFL':
-                team_record.tie_count = tie_count=team_dict['t']
-            
-            team_records_to_create.append(team_record)
+            )
         else:
             team_record_to_update = TeamRecord.objects.get(team=team_objs_dict[team_dict['name']], season=season)
 
             team_record_to_update.win_count = team_dict['w']
             team_record_to_update.lose_count = team_dict['l']
-            if league_name == 'NFL':
-                team_record_to_update.tie_count = team_dict['t']
+            team_record_to_update.tie_count = team_dict['t']
 
             team_records_to_update.append(team_record_to_update)
         
@@ -115,28 +112,21 @@ def _get_season_standings(league_name, year):
         team_name = _get_nfl_team_name(team_name_rows[i])
         wins = _get_team_wins(team_standings_rows[i])
         loses = _get_team_loses(team_standings_rows[i])
+        ties = _get_nfl_team_tie(team_standings_rows[i]) if league_name == 'NFL' else 0
+        pct = _get_nfl_team_pct(team_standings_rows[i]) if league_name == 'NFL' else _get_team_pct(team_standings_rows[i])
 
         if team_abbr == '':
             team_abbr = team_name
             team_name = _get_team_name(team_name_rows[i])
 
-        team_dict = {
+        team_standings.append({
             'name': team_name,
             'abbr': team_abbr,
             'w': wins,
             'l': loses,
-        }
-
-        if league_name == 'NFL':
-            ties = _get_nfl_team_tie(team_standings_rows[i])
-            pct = _get_nfl_team_pct(team_standings_rows[i])
-            team_dict['t'] = ties
-            team_dict['pct'] = pct
-        elif league_name == 'MLB':
-            pct = _get_team_pct(team_standings_rows[i])
-            team_dict['pct'] = pct
-
-        team_standings.append(team_dict)
+            't': ties,
+            'pct': pct,
+        })
 
     print('_get_season_standings()')
     print(team_standings)
