@@ -96,7 +96,11 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
     TeamRecord.objects.bulk_update(team_records_to_update, ['win_count', 'lose_count', 'tie_count'])
 
 def _get_season_standings(league_name, year):
-    url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/{year}/group/league'
+    url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/{year}/group'
+    if league_name == 'NFL':
+        url += url + '/league'
+    if league_name == 'MLB':
+        url += url + '/overall'
     #url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/2021/group/league'
     page = requests.get(url)
     doc = lh.fromstring(page.content)
