@@ -32,6 +32,8 @@ class PlayerScore(models.Model):
         return f'{self.player} {self.season} {self.score}'
 
     def calculate(self):
+        print(self.player)
+        print(self.season)
         picks = self.player.pick_set.filter(season=self.season)
         running_score = 0
 
@@ -39,6 +41,7 @@ class PlayerScore(models.Model):
 
         for pick in picks:
             team = pick.team
+            print(team)
             team_record = team.teamrecord_set.get(season=self.season)
             games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
             tie_point = float(team_record.tie_count) / 2.0
@@ -104,7 +107,7 @@ class TeamRecord(models.Model):
     tie_count = models.IntegerField()
 
     def __str__(self):
-        return f'{self.team.name}: {self.win_count}-{self.lose_count}-{self.tie_count}'
+        return f'{self.season.league.name} {self.season.name} {self.team.name}: {self.win_count}-{self.lose_count}-{self.tie_count}'
     
     class Meta:
         unique_together = (
