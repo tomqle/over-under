@@ -18,6 +18,8 @@ def get_season_standings_auto():
     elif Season.objects.filter(name=season_year, league=League.objects.get(name='MLB')).count() > 0:
         league_name = 'MLB'
 
+    print('get_season_standings(' + league_name + ', ' + season_year + ')')
+
     if league_name == '':
         return None
     
