@@ -118,8 +118,8 @@ def _get_season_standings(league_name, year):
             ties = _get_nfl_team_tie(team_standings_rows[i])
             pct = _get_nfl_team_pct(team_standings_rows[i])
         elif league_name == 'MLB':
-            team_abbr = _get_team_abbr(team_name_rows[i])
-            team_name = _get_team_name(team_name_rows[i])
+            team_abbr = _get_mlb_team_abbr(team_name_rows[i])
+            team_name = _get_mlb_team_name(team_name_rows[i])
             ties = 0
             pct = _get_team_pct(team_standings_rows[i])
 
@@ -155,11 +155,17 @@ def _get_team_standings_rows(html_table):
 def _get_nfl_team_abbr(html_tr):
     return html_tr.getchildren()[0].getchildren()[0].getchildren()[1].getchildren()[0].text_content()
 
+def _get_mlb_team_abbr(html_tr):
+    return html_tr.getchildren()[0].getchildren()[0].getchildren()[1].text_content()
+
 def _get_team_abbr(html_tr):
     return html_tr.getchildren()[0].getchildren()[0].getchildren()[2].getchildren()[0].text_content()
 
 def _get_nfl_team_name(html_tr):
     return html_tr.getchildren()[0].getchildren()[0].getchildren()[2].getchildren()[0].text_content()
+    
+def _get_mlb_team_name(html_tr):
+    return html_tr.getchildren()[0].getchildren()[0].getchildren()[2].text_content()
 
 def _get_team_name(html_tr):
     return html_tr.getchildren()[0].getchildren()[0].getchildren()[3].getchildren()[0].text_content()
