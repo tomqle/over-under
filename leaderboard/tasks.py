@@ -112,21 +112,31 @@ def _get_season_standings(league_name, year):
         team_name = _get_nfl_team_name(team_name_rows[i])
         wins = _get_team_wins(team_standings_rows[i])
         loses = _get_team_loses(team_standings_rows[i])
-        ties = _get_nfl_team_tie(team_standings_rows[i])
-        pct = _get_nfl_team_pct(team_standings_rows[i])
 
         if team_abbr == '':
             team_abbr = team_name
             team_name = _get_team_name(team_name_rows[i])
 
-        team_standings.append({
+        team_dict = {
             'name': team_name,
             'abbr': team_abbr,
             'w': wins,
             'l': loses,
-            't': ties,
-            'pct': pct,
-        })
+        }
+
+        if league_name == 'NFL':
+            ties = _get_nfl_team_tie(team_standings_rows[i])
+            pct = _get_nfl_team_pct(team_standings_rows[i])
+            team_dict['t'] = ties
+            team_dict['pct'] = pct
+        elif league_name == 'MLB':
+            pct = _get_team_pct(team_standings_rows[i])
+            team_dict['pct'] = pct
+
+        team_standings.append(team_dict)
+
+    print('_get_season_standings()')
+    print(team_standings)
 
     return team_standings
 
