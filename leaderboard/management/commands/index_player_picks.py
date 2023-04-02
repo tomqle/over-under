@@ -17,14 +17,14 @@ class Command(BaseCommand):
         file_name = options['file']
         if file_name:
             wb = openpyxl.load_workbook(file_name)
-            picks_sheet = wb['Picks']
-            lines_sheet = wb['Lines']
 
-            player_picks = self._read_player_picks_from_excel(picks_sheet)
-            self._bulk_create_player_picks_from_excel(player_picks)
+            if 'Picks' in wb.sheetnames:
+                player_picks = self._read_player_picks_from_excel(wb['Picks'])
+                self._bulk_create_player_picks_from_excel(player_picks)
 
-            over_under_lines = self._read_over_under_line_from_excel(lines_sheet)
-            self._bulk_create_over_under_lines(over_under_lines)
+            if 'Lines' in wb.sheetnames:
+                over_under_lines = self._read_over_under_line_from_excel(wb['Lines'])
+                self._bulk_create_over_under_lines(over_under_lines)
 
 
     def _read_player_picks_from_excel(self, sheet):
@@ -69,11 +69,14 @@ class Command(BaseCommand):
 
     def _read_over_under_line_from_excel(self, sheet):
         over_under_lines = []
-        league = League.objects.get(name='NFL')
-        season = Season.objects.get(name='2022', league=league)
         for row in range(2, sheet.max_row + 1):
             team_abbr = str(sheet['A' + str(row)].value)
             value = str(sheet['B' + str(row)].value)
+            league_name = str(sheet['C' + str(row)].value)
+            season_year = str(sheet['D' + str(row)].value)
+
+            league = League.objects.get(name=league_name)
+            season = Season.objects.get(name=season_year, league=league)
 
             team = Team.objects.get(abbreviation=team_abbr, league=league)
 

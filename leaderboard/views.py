@@ -64,7 +64,14 @@ class RankingsView(TemplateView):
 
 class DefaultStandingsView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/standings/NFL/2022/')
+        season_year = Season.objects.aggregate(Max('name')).get('name__max')
+        league_name = ''
+        if Season.objects.filter(name=season_year, league=League.objects.get(name='NFL')).count() > 0:
+            league_name = 'NFL/'
+        elif Season.objects.filter(name=season_year, league=League.objects.get(name='MLB')).count() > 0:
+            league_name = 'MLB/'
+
+        return HttpResponseRedirect('/standings/' + league_name + season_year )
 
 class StandingsView(TemplateView):
 
@@ -84,7 +91,14 @@ class StandingsView(TemplateView):
 
 class DefaultOverUnderLineView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/over_under_lines/NFL/2022/')
+        season_year = Season.objects.aggregate(Max('name')).get('name__max')
+        league_name = ''
+        if Season.objects.filter(name=season_year, league=League.objects.get(name='NFL')).count() > 0:
+            league_name = 'NFL/'
+        elif Season.objects.filter(name=season_year, league=League.objects.get(name='MLB')).count() > 0:
+            league_name = 'MLB/'
+
+        return HttpResponseRedirect('/over_under_lines/' + league_name + season_year )
 
 class OverUnderLineView(TemplateView):
     template_name = "ou_line.html"
@@ -102,7 +116,14 @@ class OverUnderLineView(TemplateView):
 
 class DefaultPicksView(View):
     def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('/picks/NFL/2022/')
+        season_year = Season.objects.aggregate(Max('name')).get('name__max')
+        league_name = ''
+        if Season.objects.filter(name=season_year, league=League.objects.get(name='NFL')).count() > 0:
+            league_name = 'NFL/'
+        elif Season.objects.filter(name=season_year, league=League.objects.get(name='MLB')).count() > 0:
+            league_name = 'MLB/'
+
+        return HttpResponseRedirect('/picks/' + league_name + season_year )
 
 class PicksView(TemplateView):
     template_name = "picks.html"
