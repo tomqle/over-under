@@ -97,11 +97,13 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
 
 def _get_season_standings(league_name, year):
     url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/{year}/group'
-    if league_name == 'NFL':
-        url += url + '/league'
-    if league_name == 'MLB':
-        url += url + '/overall'
     #url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/2021/group/league'
+    if league_name == 'NFL':
+        url += '/league'
+    if league_name == 'MLB':
+        url += '/overall'
+    print(url)
+
     page = requests.get(url)
     doc = lh.fromstring(page.content)
 
@@ -112,14 +114,11 @@ def _get_season_standings(league_name, year):
 
     team_standings = []
     for i in range(0, len(team_name_rows)):
+        print(i)
         if league_name == 'NFL':
-            #team_abbr = _get_nfl_team_abbr(team_name_rows[i])
-            #team_name = _get_nfl_team_name(team_name_rows[i])
             ties = _get_nfl_team_tie(team_standings_rows[i])
             pct = _get_nfl_team_pct(team_standings_rows[i])
         elif league_name == 'MLB':
-            #team_abbr = _get_mlb_team_abbr(team_name_rows[i])
-            #team_name = _get_mlb_team_name(team_name_rows[i])
             ties = 0
             pct = _get_team_pct(team_standings_rows[i])
 
@@ -127,6 +126,7 @@ def _get_season_standings(league_name, year):
         team_name = _get_nfl_team_name(team_name_rows[i])
         wins = _get_team_wins(team_standings_rows[i])
         loses = _get_team_loses(team_standings_rows[i])
+
 
         if team_abbr == '':
             team_abbr = team_name
@@ -157,17 +157,11 @@ def _get_team_standings_rows(html_table):
 def _get_nfl_team_abbr(html_tr):
     return html_tr.getchildren()[0].getchildren()[0].getchildren()[1].getchildren()[0].text_content()
 
-def _get_mlb_team_abbr(html_tr):
-    return html_tr.getchildren()[0].getchildren()[0].getchildren()[1].text_content()
-
 def _get_team_abbr(html_tr):
     return html_tr.getchildren()[0].getchildren()[0].getchildren()[2].getchildren()[0].text_content()
 
 def _get_nfl_team_name(html_tr):
     return html_tr.getchildren()[0].getchildren()[0].getchildren()[2].getchildren()[0].text_content()
-    
-def _get_mlb_team_name(html_tr):
-    return html_tr.getchildren()[0].getchildren()[0].getchildren()[2].text_content()
 
 def _get_team_name(html_tr):
     return html_tr.getchildren()[0].getchildren()[0].getchildren()[3].getchildren()[0].text_content()
