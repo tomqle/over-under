@@ -1,10 +1,27 @@
 # Create your tasks here
 
+from django.db.models import Max
+
 from celery import shared_task
 from leaderboard.models import League, OverUnderLine, Pick, Player, PlayerScore, PlayerScoreManager, Season, Team, TeamRecord
 
 import requests
 import lxml.html as lh
+
+@shared_task
+def get_season_standings_auto():
+    season_year = Season.objects.aggregate(Max('name')).get('name__max')
+    league_name = ''
+    
+    if Season.objects.filter(name=season_year, league=League.objects.get(name='NFL')).count() > 0:
+        league_name = 'NFL'
+    elif Season.objects.filter(name=season_year, league=League.objects.get(name='MLB')).count() > 0:
+        league_name = 'MLB'
+
+    if league_name == '':
+        return None
+    
+    return get_season_standings(league_name, season_year)
 
 @shared_task
 def get_nfl_2022_standings():
