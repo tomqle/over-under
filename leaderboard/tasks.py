@@ -89,6 +89,8 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
 
             team_records_to_update.append(team_record_to_update)
         
+    print('_bulk_update_league_team_records():' + team_records_to_create)
+
     TeamRecord.objects.bulk_create(team_records_to_create)
     TeamRecord.objects.bulk_update(team_records_to_update, ['win_count', 'lose_count', 'tie_count'])
 
