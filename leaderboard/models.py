@@ -32,20 +32,23 @@ class PlayerScore(models.Model):
         return f'{self.player} {self.season} {self.score}'
 
     def calculate(self):
-        print(self.player)
-        print(self.season)
         picks = self.player.pick_set.filter(season=self.season)
         running_score = 0
+
+        games_count = 0.0
+        if(self.season.league.name == 'NFL'):
+            games_count = 17.0
+        elif(self.season.league.name == 'MLB'):
+            games_count = 162.0
 
         print(f'player: {self.player}')
 
         for pick in picks:
             team = pick.team
-            print(team)
             team_record = team.teamrecord_set.get(season=self.season)
             games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
             tie_point = float(team_record.tie_count) / 2.0
-            projected_win_count = float(team_record.win_count + tie_point) * 17.0 / float(games_played)
+            projected_win_count = float(team_record.win_count + tie_point) * games_count / float(games_played)
             over_line = self.season.overunderline_set.get(team=team).line
             points = Decimal(projected_win_count) - over_line
             print(f'points: {points}')
