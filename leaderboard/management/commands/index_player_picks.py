@@ -75,12 +75,12 @@ class Command(BaseCommand):
             league_name = str(sheet['C' + str(row)].value)
             season_year = str(sheet['D' + str(row)].value)
 
-            league = League.objects.get(name=league_name)
-            season = Season.objects.get(name=season_year, league=league)
-
-            team = Team.objects.get(abbreviation=team_abbr, league=league)
-
-            over_under_lines.append(OverUnderLine(team=team, line=value, season=season))
+            if League.objects.filter(name=league_name) > 0:
+                league = League.objects.get(name=league_name)
+                if Season.objects.filter(name=season_year, league=league) > 0:
+                    season = Season.objects.get(name=season_year, league=league)
+                    team = Team.objects.get(abbreviation=team_abbr, league=league)
+                    over_under_lines.append(OverUnderLine(team=team, line=value, season=season))
 
         print(over_under_lines)
 
