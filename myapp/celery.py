@@ -18,7 +18,7 @@ app.conf.broker_url = 'redis://localhost:6379/0'
 app.conf.beat_schedule = {
     'get-standings-every-60-seconds': {
         'task': 'leaderboard.tasks.get_season_standings_auto',
-        'schedule': 60.0,
+        'schedule': 900.0,
         'args': (),
     }
 }

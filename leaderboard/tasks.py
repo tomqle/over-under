@@ -1,12 +1,16 @@
 # Create your tasks here
 
 from django.db.models import Max
+from django.db.models.query import QuerySet
 
 from celery import shared_task
 from leaderboard.models import League, OverUnderLine, Pick, Player, PlayerScore, PlayerScoreManager, Season, Team, TeamRecord
+from leaderboard.datasource.standings_data import StandingsData, StandingsDataAPI
 
+import os
 import requests
 import lxml.html as lh
+from typing import List
 
 @shared_task
 def get_season_standings_auto():
@@ -33,22 +37,31 @@ def get_nfl_2022_standings():
 def get_nfl_2021_standings():
     return get_season_standings('NFL', '2021')
 
-def get_season_standings(league_name, year):
-    standings = _get_season_standings(league_name, year)
+def get_season_standings(league, year):
+    env_var = 'API_SPORTS_TOKEN'
+    if env_var in os.environ.keys():
+        token: str = os.environ[env_var]
+        data_source: StandingsData = StandingsDataAPI('API-Sports', token)
+        standings = data_source.get_season_standings(league, year)
+        for s in standings:
+            _fill_team_abbr(s)
 
-    _bulk_create_league_teams(standings, league_name)
+        #_bulk_create_league_teams(standings, league)
 
-    team_objs_dict = {team_obj.name:team_obj for team_obj in Team.objects.all()}
-    _bulk_update_league_team_records(standings, team_objs_dict, league_name, year)
+        team_objs_dict = {team_obj.name:team_obj for team_obj in Team.objects.all()}
+        _bulk_update_league_team_records(standings, team_objs_dict, league, year)
 
-    season = Season.objects.get(name=year, league=League.objects.get(name=league_name))
-    PlayerScore.objects.update_score(season=season)
+        season = Season.objects.get(name=year, league=League.objects.get(name=league))
+        PlayerScore.objects.update_score(season=season)
 
-    OverUnderLine.objects.update_score(season)
+        OverUnderLine.objects.update_score(season)
 
-    print(standings)
+        print(standings)
 
-    return standings
+        return standings
+    
+    print('API Sports token environment variable not set')
+    return None
 
 def _bulk_create_league_teams(standings, league_name):
     league, created = League.objects.get_or_create(name=league_name)
@@ -70,24 +83,25 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
     team_records_to_create = []
     team_records_to_update = []
     for team_dict in standings:
-        if not TeamRecord.objects.filter(team=team_objs_dict[team_dict['name']], season=season):
-            team_records_to_create.append(
-                TeamRecord(
-                    team=team_objs_dict[team_dict['name']],
-                    season=season,
-                    win_count=team_dict['w'],
-                    lose_count=team_dict['l'],
-                    tie_count=team_dict['t'],
+        if team_dict['name'] in team_objs_dict.keys():
+            if not TeamRecord.objects.filter(team=team_objs_dict[team_dict['name']], season=season):
+                team_records_to_create.append(
+                    TeamRecord(
+                        team=team_objs_dict[team_dict['name']],
+                        season=season,
+                        win_count=team_dict['w'],
+                        lose_count=team_dict['l'],
+                        tie_count=team_dict['t'],
+                    )
                 )
-            )
-        else:
-            team_record_to_update = TeamRecord.objects.get(team=team_objs_dict[team_dict['name']], season=season)
+            else:
+                team_record_to_update = TeamRecord.objects.get(team=team_objs_dict[team_dict['name']], season=season)
 
-            team_record_to_update.win_count = team_dict['w']
-            team_record_to_update.lose_count = team_dict['l']
-            team_record_to_update.tie_count = team_dict['t']
+                team_record_to_update.win_count = team_dict['w']
+                team_record_to_update.lose_count = team_dict['l']
+                team_record_to_update.tie_count = team_dict['t']
 
-            team_records_to_update.append(team_record_to_update)
+                team_records_to_update.append(team_record_to_update)
         
     print('_bulk_update_league_team_records()')
     print(team_records_to_create)
@@ -95,88 +109,8 @@ def _bulk_update_league_team_records(standings, team_objs_dict, league_name, yea
     TeamRecord.objects.bulk_create(team_records_to_create)
     TeamRecord.objects.bulk_update(team_records_to_update, ['win_count', 'lose_count', 'tie_count'])
 
-def _get_season_standings(league_name, year):
-    url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/{year}/group'
-    #url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/2021/group/league'
-    if league_name == 'NFL':
-        url += '/league'
-    if league_name == 'MLB':
-        url += '/overall'
-    print(url)
-
-    page = requests.get(url)
-    doc = lh.fromstring(page.content)
-
-    table_elements = doc.xpath('//table')
-
-    team_name_rows = _get_team_name_rows(table_elements[0])
-    team_standings_rows = _get_team_standings_rows(table_elements[1])
-
-    team_standings = []
-    for i in range(0, len(team_name_rows)):
-        print(i)
-        if league_name == 'NFL':
-            ties = _get_nfl_team_tie(team_standings_rows[i])
-            pct = _get_nfl_team_pct(team_standings_rows[i])
-        elif league_name == 'MLB':
-            ties = 0
-            pct = _get_team_pct(team_standings_rows[i])
-
-        team_abbr = _get_nfl_team_abbr(team_name_rows[i])
-        team_name = _get_nfl_team_name(team_name_rows[i])
-        wins = _get_team_wins(team_standings_rows[i])
-        loses = _get_team_loses(team_standings_rows[i])
-
-
-        if team_abbr == '':
-            team_abbr = team_name
-            team_name = _get_team_name(team_name_rows[i])
-
-        team_standings.append({
-            'name': team_name,
-            'abbr': team_abbr,
-            'w': wins,
-            'l': loses,
-            't': ties,
-            'pct': pct,
-        })
-
-    print('_get_season_standings()')
-    print(team_standings)
-
-    return team_standings
-
-
-
-def _get_team_name_rows(html_table):
-    return html_table.getchildren()[2].getchildren()
-
-def _get_team_standings_rows(html_table):
-    return html_table.getchildren()[5].getchildren()
-
-def _get_nfl_team_abbr(html_tr):
-    return html_tr.getchildren()[0].getchildren()[0].getchildren()[1].getchildren()[0].text_content()
-
-def _get_team_abbr(html_tr):
-    return html_tr.getchildren()[0].getchildren()[0].getchildren()[2].getchildren()[0].text_content()
-
-def _get_nfl_team_name(html_tr):
-    return html_tr.getchildren()[0].getchildren()[0].getchildren()[2].getchildren()[0].text_content()
-
-def _get_team_name(html_tr):
-    return html_tr.getchildren()[0].getchildren()[0].getchildren()[3].getchildren()[0].text_content()
-
-def _get_team_wins(html_tr):
-    return html_tr.getchildren()[0].getchildren()[0].text_content()
-
-def _get_team_loses(html_tr):
-    return html_tr.getchildren()[1].getchildren()[0].text_content()
-
-def _get_nfl_team_tie(html_tr):
-    return html_tr.getchildren()[2].getchildren()[0].text_content()
-
-def _get_nfl_team_pct(html_tr):
-    return html_tr.getchildren()[3].getchildren()[0].text_content()
-
-def _get_team_pct(html_tr):
-    return html_tr.getchildren()[2].getchildren()[0].text_content()
+def _fill_team_abbr(team_entry: dict):
+    if team_entry['abbr'] == '':
+        teams: QuerySet = Team.objects.filter(name=team_entry['name'])
+        if len(teams) > 0:
+            team_entry['abbr'] = teams[0].abbreviation
