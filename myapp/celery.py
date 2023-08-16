@@ -4,6 +4,10 @@ from celery import Celery
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myapp.settings')
+schedule_var: str= 'GET_STANDINGS_SCHEDULE'
+schedule_interval: float = 900.0
+if schedule_var in os.environ.keys():
+    schedule_interval= os.environ[schedule_var]
 
 app = Celery('myapp')
 
@@ -18,7 +22,7 @@ app.conf.broker_url = 'redis://localhost:6379/0'
 app.conf.beat_schedule = {
     'get-standings-every-60-seconds': {
         'task': 'leaderboard.tasks.get_season_standings_auto',
-        'schedule': 900.0,
+        'schedule': schedule_interval,
         'args': (),
     }
 }
