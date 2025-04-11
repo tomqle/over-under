@@ -1,10 +1,18 @@
 from django.db import models
 from decimal import Decimal
 from users.models import User
+from datetime import datetime
 
 # Create your models here.
 
-class Player(models.Model):
+class BaseModel(models.Model):
+    created_at =models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+class Player(BaseModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -22,7 +30,7 @@ class PlayerScoreManager(models.Manager):
 
         self.bulk_update(scores_to_update, ['score'])
 
-class PlayerScore(models.Model):
+class PlayerScore(BaseModel):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     season = models.ForeignKey('Season', on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=10, decimal_places=3, default=0.0)
@@ -63,7 +71,7 @@ class PlayerScore(models.Model):
             'season',
         )
 
-class Team(models.Model):
+class Team(BaseModel):
     league = models.ForeignKey('League', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     abbreviation = models.CharField(max_length=10)
@@ -77,14 +85,14 @@ class Team(models.Model):
             'name',
         )
 
-class League(models.Model):
+class League(BaseModel):
     name = models.CharField(max_length=255, unique=True)
     games_count = models.IntegerField()
 
     def __str__(self):
         return self.name
 
-class Season(models.Model):
+class Season(BaseModel):
     league = models.ForeignKey(League, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     games_count = models.IntegerField()
@@ -98,7 +106,7 @@ class Season(models.Model):
             'name',
         )
 
-class TeamRecord(models.Model):
+class TeamRecord(BaseModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     season = models.ForeignKey(Season, on_delete=models.CASCADE)
     win_count = models.IntegerField()
@@ -114,7 +122,7 @@ class TeamRecord(models.Model):
             'season',
         )
 
-class Pick(models.Model):
+class Pick(BaseModel):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     season = models.ForeignKey(Season, on_delete=models.CASCADE)
@@ -141,7 +149,7 @@ class OverUnderLineManager(models.Manager):
 
         self.bulk_update(ou_lines_to_update, ['diff'])
 
-class OverUnderLine(models.Model):
+class OverUnderLine(BaseModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     season = models.ForeignKey(Season, on_delete=models.CASCADE)
     line = models.DecimalField(max_digits=3, decimal_places=1)
