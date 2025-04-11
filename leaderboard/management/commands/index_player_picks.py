@@ -71,7 +71,7 @@ class Command(BaseCommand):
         over_under_lines = []
         for row in range(2, sheet.max_row + 1):
             team_abbr = str(sheet['A' + str(row)].value)
-            value = str(sheet['B' + str(row)].value)
+            value = float(str(sheet['B' + str(row)].value))
             league_name = str(sheet['C' + str(row)].value)
             season_year = str(sheet['D' + str(row)].value)
 
@@ -87,6 +87,7 @@ class Command(BaseCommand):
         return over_under_lines
 
     def _bulk_create_over_under_lines(self, over_under_lines):
+        OverUnderLine.objects.bulk_create(over_under_lines)
         try:
             OverUnderLine.objects.bulk_create(over_under_lines)
         except UniqueViolation:

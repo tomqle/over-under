@@ -152,7 +152,7 @@ class OverUnderLineManager(models.Manager):
 class OverUnderLine(BaseModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     season = models.ForeignKey(Season, on_delete=models.CASCADE)
-    line = models.DecimalField(max_digits=3, decimal_places=1)
+    line = models.DecimalField(max_digits=4, decimal_places=1)
     diff = models.DecimalField(max_digits=10, decimal_places=3, default=0.0)
     objects = OverUnderLineManager()
 
@@ -163,7 +163,7 @@ class OverUnderLine(BaseModel):
         team_record = TeamRecord.objects.get(team=self.team, season=self.season)
         games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
         projected_win_count = team_record.win_count + (float(team_record.tie_count) / 2)
-        if games_played != 17:
+        if games_played != self.season.games_count:
             projected_win_count = float(team_record.win_count) * self.season.games_count / float(games_played)
         self.diff = Decimal(projected_win_count) - self.line
 

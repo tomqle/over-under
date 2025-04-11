@@ -16,14 +16,17 @@ Django==5.1.7
 django-allauth==65.6.0
 djangorestframework==3.16.0
 et_xmlfile==2.0.0
+gunicorn==23.0.0
 idna==3.10
 kombu==5.5.2
 lxml==5.3.1
 numpy==2.2.4
 oauthlib==3.2.2
 openpyxl==3.1.5
+packaging==24.2
 pandas==2.2.3
 prompt_toolkit==3.0.50
+psycopg2==2.9.10
 pycparser==2.22
 PyJWT==2.10.1
 python-dateutil==2.9.0.post0
