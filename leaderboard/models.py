@@ -40,30 +40,27 @@ class PlayerScore(BaseModel):
         return f'{self.player} {self.season} {self.score}'
 
     def calculate(self):
-        picks = self.player.pick_set.filter(season=self.season)
+        picks = self.player.pick_set.filter(season=self.season).order_by('pk')
         running_score = 0
 
         print(f'player: {self.player}')
 
         for pick in picks:
             team = pick.team
-            team_record = team.teamrecord_set.get(season=self.season)
-            games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
-            tie_point = float(team_record.tie_count) / 2.0
-            projected_win_count = float(team_record.win_count + tie_point) * self.season.games_count / float(games_played)
-            over_line = self.season.overunderline_set.get(team=team).line
-            points = Decimal(projected_win_count) - over_line
-            print(f'points: {points}')
-            if pick.over:
-                running_score += points
-            else:
-                running_score -= points
+            pick.calculate()
+            pick.save()
+            running_score += pick.points
 
         print(f'score: {running_score}')
 
         self.score = running_score
 
         return running_score
+    
+    @property
+    def second_chance(self):
+        picks = self.player.pick_set.filter(season=self.season).order_by('-pk')
+        return self.score - picks[0].points
 
     class Meta:
         unique_together = (
@@ -113,6 +110,18 @@ class TeamRecord(BaseModel):
     lose_count = models.IntegerField()
     tie_count = models.IntegerField()
 
+    @property
+    def win_pct(self):
+        pct = self.win_count / float(self.win_count + self.lose_count + self.tie_count)
+        return f'{pct:.3f}'
+
+    @property
+    def win_proj(self):
+        games_played = self.win_count + self.lose_count + self.tie_count
+        tie_point = float(self.tie_count) / 2.0
+        projected_win_count = float(self.win_count + tie_point) * self.season.games_count / float(games_played)
+        return projected_win_count
+
     def __str__(self):
         return f'{self.season.league.name} {self.season.name} {self.team.name}: {self.win_count}-{self.lose_count}-{self.tie_count}'
     
@@ -127,6 +136,16 @@ class Pick(BaseModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     season = models.ForeignKey(Season, on_delete=models.CASCADE)
     over = models.BooleanField()
+    pickorder = models.IntegerField(blank=True, null=True)
+    points = models.DecimalField(max_digits=10, decimal_places=3, default=0.0)
+
+    def calculate(self):
+        team_record = self.team.teamrecord_set.get(season=self.season)
+        over_line = self.season.overunderline_set.get(team=self.team).line
+        self.points = Decimal(team_record.win_proj) - over_line
+        if not self.over:
+            self.points *= -1
+        print(f'points: { self.points }')
 
     def __str__(self):
         return f'{self.player}: {self.season} {self.team} <{"O" if self.over else "U"}>'
@@ -136,6 +155,7 @@ class Pick(BaseModel):
             'player',
             'team',
             'season',
+            'pickorder',
         )
 
 class OverUnderLineManager(models.Manager):

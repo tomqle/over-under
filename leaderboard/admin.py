@@ -34,7 +34,7 @@ class PickAdmin(admin.ModelAdmin):
     list_display_links = ('player__name', )
     list_filter = ['season__league', 'season__league__name', 'team__name', 'player__name']
     search_fields = ['season__league', 'season__league__name', 'team__name', 'player__name']
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['points', 'created_at', 'updated_at']
     ordering = ['season__league__name', '-season__name', 'player__name']
 
 class PlayerPickInline(admin.TabularInline):

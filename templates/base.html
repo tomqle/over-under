@@ -21,16 +21,24 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-              <a class="nav-link" href="/rankings/">Rankings</span></a>
+              <a class="nav-link {% if url == 'rankings' %} active {% endif %}"
+                href="/rankings/{{ league.name }}/{{ season.name }}/">Rankings</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/standings/">Standings</a>
+              <a class="nav-link {% if url == 'rankings_extended' %} active {% endif %}"
+                href="/rankings_extended/{{ league.name }}/{{ season.name }}/">Rankings—Extended</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/over_under_lines/">O/U Lines</a>
+              <a class="nav-link {% if url == 'standings' %} active {% endif %}"
+                href="/standings/{{ league.name }}/{{ season.name }}/">Standings</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/picks/">Picks</a>
+              <a class="nav-link {% if url == 'over_under_lines' %} active {% endif %}"
+                href="/over_under_lines/{{ league.name }}/{{ season.name }}/">O/U Lines</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if url == 'picks' %} active {% endif %}"
+                href="/picks/{{ league.name }}/{{ season.name }}/">Picks</a>
             </li>
           </ul>
         </div>
@@ -38,6 +46,14 @@
       {% endblock %}
     </div>
     <div id="content">
+      <select onchange="on_season_change('{{ url }}')" class="form-control" id="select-season">
+        {% for s in seasons %}
+        <option {% if s == season %}selected="selected"{% endif %}>
+          {{ s }}
+        </option>
+        {% endfor %}
+      </select>
+      <br>
       {% block content %}{% endblock %}
     </div>                   
     <div id="javascript">    
@@ -47,6 +63,14 @@
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+        <script type="text/javascript">
+          function on_season_change(url) {
+            season_str = document.getElementById('select-season').value;
+            season_str1 = season_str.replace(' ', '/')
+            //alert(season_str1);
+            window.location.replace('/' + url + '/' + season_str1)
+          }
+        </script>
       {% endblock %}
     </div>
   </body>
