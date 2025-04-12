@@ -21,14 +21,36 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#t*bi(v#o_5*gsp4k5&9!tt9o6nvg^w184znmw&a7c=&3j4+7j'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 SITE_ID = 1
+
+LOGGING = {
+    'version': 1,
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        }
+    },
+    'loggers': {
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+    }
+}
 
 # Application definition
 
@@ -62,6 +84,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'myapp.urls'
@@ -79,6 +102,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'leaderboard.context_processors.from_settings',
             ],
         },
     },
@@ -122,7 +146,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+#TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/New_York'
 
 USE_I18N = True
 
@@ -130,6 +155,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+FORMAT_MODULE_PATH = 'leaderboard.formats'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -177,3 +203,18 @@ REST_FRAMEWORK = {
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = 'my-app-auth'
 JWT_AUTH_REFRESH_COOKIE = 'my-refresh-token'
+
+# either 'api' or 'scrape'
+#STANDINGS_METHOD = 'scrape'
+#STANDINGS_SOURCE = 'sports-reference'
+
+#API_SPORTS_TOKEN = ''
+#STANDINGS_SOURCE = 'API-Sports'
+
+# Admin notice - option between top banner or ribbon
+#ADMIN_NOTICE_SHOW = True
+#ADMIN_NOTICE_FLOAT = True
+#ADMIN_NOTICE_TEXT = 'DEV'
+#ADMIN_NOTICE_COLOR = 'green'
+#ADMIN_NOTICE_COLOR_TEXT = 'white'
+#ADMIN_NOTICE_RIBBON = True # Pre-requisite: ADMIN_NOTICE_SHOW set to True

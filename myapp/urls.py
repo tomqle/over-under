@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from leaderboard.views import DefaultOverUnderLineView, DefaultPicksView, DefaultRankingsView, DefaultStandingsView, HomeView, LeaguesView, OverUnderLineView, PicksView, RankingsView, SeasonsView, StandingsView
+from leaderboard.views import DefaultOverUnderLineView, DefaultPicksView, DefaultRankingsView, DefaultRankingsExtendedView, DefaultStandingsView, HomeView, LeaguesView, OverUnderLineView, PicksView, RankingsView, RankingsExtendedView, SeasonsView, StandingsView
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
@@ -29,6 +29,8 @@ urlpatterns = [
     path('picks/<str:league>/<str:season>/', PicksView.as_view(), name='picks'),
     path('rankings/', DefaultRankingsView.as_view(), name='default_rankings'),
     path('rankings/<str:league>/<str:season>/', RankingsView.as_view(), name='rankings'),
+    path('rankings_extended/', DefaultRankingsExtendedView.as_view(), name='default_rankings_extended'),
+    path('rankings_extended/<str:league>/<str:season>/', RankingsExtendedView.as_view(), name='rankings_extended'),
     path('standings/', DefaultStandingsView.as_view(), name='default_standings'),
     path('standings/<str:league>/<str:season>/', StandingsView.as_view(), name='standings'),
 ]

@@ -11,50 +11,118 @@ class StandingsData:
 
 class StandingsDataScraper(StandingsData):
     def get_season_standings(self, league_name: str, year: str) -> dict:
-        url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/{year}/group'
-        #url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/2021/group/league'
-        if league_name == 'NFL':
-            url += '/league'
-        if league_name == 'MLB':
-            url += '/overall'
-        print(url)
-
-        page = requests.get(url)
-        doc = lh.fromstring(page.content)
-
-        table_elements = doc.xpath('//table')
-
-        team_name_rows = self._get_team_name_rows(table_elements[0])
-        team_standings_rows = self._get_team_standings_rows(table_elements[1])
 
         team_standings = []
-        for i in range(0, len(team_name_rows)):
-            print(i)
-            if league_name == 'NFL':
-                ties = self._get_nfl_team_tie(team_standings_rows[i])
-                pct = self._get_nfl_team_pct(team_standings_rows[i])
-            elif league_name == 'MLB':
-                ties = 0
-                pct = self._get_team_pct(team_standings_rows[i])
 
-            team_abbr = self._get_nfl_team_abbr(team_name_rows[i])
-            team_name = self._get_nfl_team_name(team_name_rows[i])
-            wins = self._get_team_wins(team_standings_rows[i])
-            loses = self._get_team_loses(team_standings_rows[i])
+        if(self.source == 'espn'):
+            url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/{year}/group'
+            #url = f'https://www.espn.com/{league_name.lower()}/standings/_/season/2021/group/league'
+            if league_name != None and league_name.upper() == 'NFL':
+                url += '/league'
+            if league_name != None and league_name == 'MLB':
+                url += '/overall'
+            print(url)
+
+            page = requests.get(url)
+            doc = lh.fromstring(page.content)
+
+            table_elements = doc.xpath('//table')
+
+            team_name_rows = self._get_team_name_rows(table_elements[0])
+            team_standings_rows = self._get_team_standings_rows(table_elements[1])
+
+            for i in range(0, len(team_name_rows)):
+                print(i)
+                if league_name == 'NFL':
+                    ties = self._get_nfl_team_tie(team_standings_rows[i])
+                    pct = self._get_nfl_team_pct(team_standings_rows[i])
+                elif league_name == 'MLB':
+                    ties = 0
+                    pct = self._get_team_pct(team_standings_rows[i])
+
+                team_abbr = self._get_nfl_team_abbr(team_name_rows[i])
+                team_name = self._get_nfl_team_name(team_name_rows[i])
+                wins = self._get_team_wins(team_standings_rows[i])
+                loses = self._get_team_loses(team_standings_rows[i])
 
 
-            if team_abbr == '':
-                team_abbr = team_name
-                team_name = self._get_team_name(team_name_rows[i])
+                if team_abbr == '':
+                    team_abbr = team_name
+                    team_name = self._get_team_name(team_name_rows[i])
 
-            team_standings.append({
-                'name': team_name,
-                'abbr': team_abbr,
-                'w': wins,
-                'l': loses,
-                't': ties,
-                'pct': pct,
-            })
+                team_standings.append({
+                    'name': team_name,
+                    'abbr': team_abbr,
+                    'w': wins,
+                    'l': loses,
+                    't': ties,
+                    'pct': pct,
+                })
+
+        elif(self.source == 'sports-reference'):
+            url = ''
+
+            if league_name != None and league_name.upper() == 'NFL':
+                url = f'https://www.pro-football-reference.com/years/{year}/'
+            elif league_name != None and league_name.upper() == 'MLB':
+                url = f'https://www.baseball-reference.com/leagues/majors/{year}-standings.shtml'
+
+
+            page = requests.get(url)
+            doc = lh.fromstring(page.content)
+            standings_html = doc.xpath('//table')
+
+
+            if league_name != None and league_name.upper() == 'NFL':
+                COLUMN_TEAM_NAME = 0
+                COLUMN_WIN = 1
+                COLUMN_LOSE = 2
+                COLUMN_PCT = 3
+                COLUMN_TIE = 99
+                for standings_tbl in standings_html:
+                    standings_header = standings_tbl.getchildren()[2].getchildren()[0]
+                    if standings_header[3].text_content() == 'T':
+                        COLUMN_TIE = 3
+                        COLUMN_PCT = 4
+
+                    for standings_row in standings_tbl.getchildren()[3].getchildren():
+                        if len(standings_row.getchildren()) > 1:
+                            team_name = standings_row.getchildren()[COLUMN_TEAM_NAME].text_content()
+                            wins = standings_row.getchildren()[COLUMN_WIN].text_content()
+                            loses = standings_row.getchildren()[COLUMN_LOSE].text_content()
+                            pct = standings_row.getchildren()[COLUMN_PCT].text_content()
+                            tie = standings_row.getchildren()[COLUMN_TIE].text_content() if COLUMN_TIE == 3 else 0
+
+
+                            team_standings.append({
+                                'name': team_name,
+                                'abbr': '',
+                                'w': wins,
+                                'l': loses,
+                                't': tie,
+                                'pct': pct,
+                            })
+
+            elif league_name != None and league_name.upper() == 'MLB':
+                COLUMN_TEAM_NAME = 0
+                COLUMN_WIN = 1
+                COLUMN_LOSE = 2
+                COLUMN_PCT = 3
+                for standings_tbl in standings_html:
+                    for i in range(5):
+                        team_name = standings_tbl.getchildren()[3].getchildren()[i].getchildren()[COLUMN_TEAM_NAME].text_content()
+                        wins = standings_tbl.getchildren()[3].getchildren()[i].getchildren()[COLUMN_WIN].text_content()
+                        loses = standings_tbl.getchildren()[3].getchildren()[i].getchildren()[COLUMN_LOSE].text_content()
+                        pct = standings_tbl.getchildren()[3].getchildren()[i].getchildren()[COLUMN_PCT].text_content()
+
+                        team_standings.append({
+                            'name': team_name,
+                            'abbr': '',
+                            'w': wins,
+                            'l': loses,
+                            't': 0,
+                            'pct': pct,
+                        })
 
         print('_get_season_standings()')
         print(team_standings)

@@ -1,11 +1,13 @@
 # Create your tasks here
 
+from django.conf import settings
+
 from django.db.models import Max
 from django.db.models.query import QuerySet
 
 from celery import shared_task
 from leaderboard.models import League, OverUnderLine, Pick, Player, PlayerScore, PlayerScoreManager, Season, Team, TeamRecord
-from leaderboard.datasource.standings_data import StandingsData, StandingsDataAPI
+from leaderboard.datasource.standings_data import StandingsData, StandingsDataAPI, StandingsDataScraper
 
 import os
 import requests
@@ -38,30 +40,29 @@ def get_nfl_2021_standings():
     return get_season_standings('NFL', '2021')
 
 def get_season_standings(league, year):
-    env_var = 'API_SPORTS_TOKEN'
-    if env_var in os.environ.keys():
-        token: str = os.environ[env_var]
-        data_source: StandingsData = StandingsDataAPI('API-Sports', token)
-        standings = data_source.get_season_standings(league, year)
-        for s in standings:
-            _fill_team_abbr(s)
+    if getattr(settings, 'STANDINGS_METHOD', 'scrape') == 'api':
+        token: str = getattr(settings, 'API_SPORTS_TOKEN', None)
+        data_source: StandingsData = StandingsDataAPI(getattr(settings, 'STANDINGS_SOURCE', 'API-Sports'), token)
+    elif getattr(settings, 'STANDINGS_METHOD', 'scrape') == 'scrape':
+        data_source: StandingsData = StandingsDataScraper(getattr(settings, 'STANDINGS_SOURCE', 'sports-reference'))
 
-        #_bulk_create_league_teams(standings, league)
+    standings = data_source.get_season_standings(league, year)
+    for s in standings:
+        _fill_team_abbr(s)
 
-        team_objs_dict = {team_obj.name:team_obj for team_obj in Team.objects.all()}
-        _bulk_update_league_team_records(standings, team_objs_dict, league, year)
+    #_bulk_create_league_teams(standings, league)
 
-        season = Season.objects.get(name=year, league=League.objects.get(name=league))
-        PlayerScore.objects.update_score(season=season)
+    team_objs_dict = {team_obj.name:team_obj for team_obj in Team.objects.all()}
+    _bulk_update_league_team_records(standings, team_objs_dict, league, year)
 
-        OverUnderLine.objects.update_score(season)
+    season = Season.objects.get(name=year, league=League.objects.get(name=league))
+    PlayerScore.objects.update_score(season=season)
 
-        print(standings)
+    OverUnderLine.objects.update_score(season)
 
-        return standings
-    
-    print('API Sports token environment variable not set')
-    return None
+    print(standings)
+
+    return standings
 
 def _bulk_create_league_teams(standings, league_name):
     league, created = League.objects.get_or_create(name=league_name)

@@ -7,14 +7,22 @@
       <th>Team</th>
       <th>W</th>
       <th>L</th>
-      <th>T</th>
+      {% if league.name == 'NFL' %} <th>T</th> {% endif %}
+      <th>PCT</th>
+      <th>~W</th>
+      <th>Line</th>
+      <th>Diff</th>
     </tr>
   {% for team_record in team_records %}
     <tr>
-      <td>{{ team_record.team.name }}</td>
+      <td>{{ team_record.team_name }}</td>
       <td>{{ team_record.win_count }}</td>
       <td>{{ team_record.lose_count }}</td>
-      <td>{{ team_record.tie_count }}</td>
+      {% if league.name == 'NFL' %} <td>{{ team_record.tie_count }}</td> {% endif %}
+      <td>{{ team_record.win_pct }}</td>
+      <td>{{ team_record.win_proj }}</td>
+      <td>{{ team_record.line }}</td>
+      <td>{{ team_record.diff }}</td>
     </tr>
   {% endfor %}
   </table>
