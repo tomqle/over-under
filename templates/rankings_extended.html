@@ -3,31 +3,33 @@
 
 {% block content %}
   <h5>Rankings—Extended</h5>
-  <table class="table">
-    <tr>
-      <th>Player</th>
-      <th>Score</th>
-      <th>2nd chance</th>
-      <th>1st pick</th>
-      <th>2nd pick</th>
-      <th>3rd pick</th>
-      <th>4th pick</th>
-    </tr>
-  {% for player_scores in players_scores %}
-    <tr>
-      <td>{{ player_scores.player }}</td>
-      <td>{{ player_scores.score }}</td>
-      <td>{{ player_scores.second_chance }}</td>
-    {% for player_pick in player_scores|get_item:'picks' %}
-      <td>{{ player_pick.team.abbreviation }} - 
-        {% if player_pick.over %}
-        O
-        {% else %}
-        U
-        {% endif %} :
-      {{ player_pick.points }}</td>
+  <div class="table-responsive">
+    <table class="table">
+      <tr>
+        <th>Player</th>
+        <th class="text-right">Score</th>
+        <th class="text-right">2nd chance</th>
+        <th class="text-right">1st pick</th>
+        <th class="text-right">2nd pick</th>
+        <th class="text-right">3rd pick</th>
+        <th class="text-right">4th pick</th>
+      </tr>
+    {% for player_scores in players_scores %}
+      <tr>
+        <td>{{ player_scores.player }}</td>
+        <td class="text-right">{{ player_scores.score }}</td>
+        <td class="text-right">{{ player_scores.second_chance }}</td>
+      {% for player_pick in player_scores|get_item:'picks' %}
+        <td class="text-right">{{ player_pick.team.abbreviation }} - 
+          {% if player_pick.over %}
+          O
+          {% else %}
+          U
+          {% endif %} :
+        {{ player_pick.points }}</td>
+      {% endfor %}
+      </tr>
     {% endfor %}
-    </tr>
-  {% endfor %}
-  </table>
+    </table>
+  </div>
 {% endblock %}

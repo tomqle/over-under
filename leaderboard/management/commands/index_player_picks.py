@@ -57,6 +57,9 @@ class Command(BaseCommand):
                 Pick(player=player, season=season, team=teams_dict[pick4], over=over4),
             ]
 
+            print('----- _read_player_picks_from_excel(sheet) -----')
+            print(player_picks)
+
         return player_picks
 
     def _bulk_create_player_picks_from_excel(self, player_picks):

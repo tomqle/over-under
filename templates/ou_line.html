@@ -2,18 +2,24 @@
 
 {% block content %}
   <h5>Over/Under Line</h5>
-  <table class="table">
-    <tr>
-      <th>Team</th>
-      <th>Line</th>
-      <th>Diff</th>
-    </tr>
-  {% for ou_line in ou_lines %}
-    <tr>
-      <td>{{ ou_line.team.name }}</td>
-      <td>{{ ou_line.line }}</td>
-      <td>{{ ou_line.diff }}</td>
-    </tr>
-  {% endfor %}
-  </table>
+  <div class="table-responsive">
+    <table class="table">
+      <tr>
+        <th>Team</th>
+        <th class="text-right">Line</th>
+        <th class="text-right">Diff</th>
+        <th class="text-right">O</th>
+        <th class="text-right">U</th>
+      </tr>
+    {% for ou_line in ou_lines %}
+      <tr>
+        <td>{{ ou_line.team_name }}</td>
+        <td class="text-right">{{ ou_line.line }}</td>
+        <td class="text-right">{{ ou_line.diff }}</td>
+        <td class="text-right">{{ ou_line.over_count }}</td>
+        <td class="text-right">{{ ou_line.under_count }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  </div>
 {% endblock %}
