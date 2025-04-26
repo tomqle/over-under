@@ -59,8 +59,9 @@ class PlayerScore(BaseModel):
     
     @property
     def second_chance(self):
-        picks = self.player.pick_set.filter(season=self.season).order_by('-pk')
-        return self.score - picks[0].points
+        picks = self.player.pick_set.filter(season=self.season).order_by('points')
+        low = picks[0].points if len(picks) > 0 else 0
+        return self.score - low
 
     class Meta:
         unique_together = (
@@ -85,6 +86,7 @@ class Team(BaseModel):
 class League(BaseModel):
     name = models.CharField(max_length=255, unique=True)
     games_count = models.IntegerField()
+    ties_allowed = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -112,14 +114,19 @@ class TeamRecord(BaseModel):
 
     @property
     def win_pct(self):
-        pct = self.win_count / float(self.win_count + self.lose_count + self.tie_count)
+        games_played = self.win_count + self.lose_count + self.tie_count
+        if games_played != 0:
+            pct = self.win_count / float(games_played)
+        else:
+            pct = 0.0
         return f'{pct:.3f}'
 
     @property
     def win_proj(self):
         games_played = self.win_count + self.lose_count + self.tie_count
+        games_count = self.season.games_count if self.season.games_count != 0 else self.season.league.games_count
         tie_point = float(self.tie_count) / 2.0
-        projected_win_count = float(self.win_count + tie_point) * self.season.games_count / float(games_played)
+        projected_win_count = float(self.win_count + tie_point) * games_count / float(games_played)
         return projected_win_count
 
     def __str__(self):
@@ -140,12 +147,17 @@ class Pick(BaseModel):
     points = models.DecimalField(max_digits=10, decimal_places=3, default=0.0)
 
     def calculate(self):
+        try:
         team_record = self.team.teamrecord_set.get(season=self.season)
         over_line = self.season.overunderline_set.get(team=self.team).line
         self.points = Decimal(team_record.win_proj) - over_line
         if not self.over:
             self.points *= -1
         print(f'points: { self.points }')
+        except TeamRecord.DoesNotExist:
+            print(f'TeamRecord for { self.team.name } in { self.season.league.name } { self.season.name } season does not exist.')
+        except OverUnderLine.DoesNotExist:
+            print(f'OverUnderLine for { self.team.name } in { self.season.league.name } { self.season.name } season does not exist.')
 
     def __str__(self):
         return f'{self.player}: {self.season} {self.team} <{"O" if self.over else "U"}>'
@@ -180,14 +192,21 @@ class OverUnderLine(BaseModel):
         return f'{self.season} {self.team} {self.line}'
 
     def calculate(self):
+        try:
         team_record = TeamRecord.objects.get(team=self.team, season=self.season)
         games_played = team_record.win_count + team_record.lose_count + team_record.tie_count
+            games_count = self.season.games_count if self.season.games_count != 0 else self.season.league.games_count
         projected_win_count = team_record.win_count + (float(team_record.tie_count) / 2)
-        if games_played != self.season.games_count:
+            if games_played != games_count:
             projected_win_count = float(team_record.win_count) * self.season.games_count / float(games_played)
         self.diff = Decimal(projected_win_count) - self.line
 
         return self.diff
+
+        except TeamRecord.DoesNotExist:
+            print(f'TeamRecord for { self.team.name } in { self.season.league.name } { self.season.name } season does not exist.')
+        except OverUnderLine.DoesNotExist:
+            print(f'OverUnderLine for { self.team.name } in { self.season.league.name } { self.season.name } season does not exist.')
 
     class Meta:
         unique_together = (

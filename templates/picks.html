@@ -2,28 +2,30 @@
 
 {% block content %}
   <h5>Picks</h5>
-  <table class="table">
-    <tr>
-      <th>Name</th>
-      <th>Pick 1</th>
-      <th>Pick 2</th>
-      <th>Pick 3</th>
-      <th>Pick 4</th>
-    <tr>
-  {% for player_picks in players_picks %}
-    <tr>
-      <td>{{ player_picks|get_item:'player' }} : 
-      {{ player_picks|get_item:'score' }}</td>
-    {% for player_pick in player_picks|get_item:'picks' %}
-      <td>{{ player_pick.team.abbreviation }} - 
-    {% if player_pick.over %}
-      O
-    {% else %}
-      U
-    {% endif %} 
-      </td>
+  <div class="table-responsive">
+    <table class="table">
+      <tr>
+        <th>Name</th>
+        <th class="text-right">Pick 1</th>
+        <th class="text-right" >Pick 2</th>
+        <th class="text-right">Pick 3</th>
+        <th class="text-right">Pick 4</th>
+      <tr>
+    {% for player_picks in players_picks %}
+      <tr>
+        <td>{{ player_picks|get_item:'player' }} : 
+        {{ player_picks|get_item:'score' }}</td>
+      {% for player_pick in player_picks|get_item:'picks' %}
+        <td class="text-right">{{ player_pick.team.abbreviation }} - 
+      {% if player_pick.over %}
+        O
+      {% else %}
+        U
+      {% endif %} 
+        </td>
+      {% endfor %}
+      </tr>
     {% endfor %}
-    </tr>
-  {% endfor %}
-  </table>
+    </table>
+  </div>
 {% endblock %}
