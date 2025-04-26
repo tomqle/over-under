@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic.base import TemplateView
@@ -14,6 +15,8 @@ class HomeView(View):
 
 class BaseView(TemplateView):
     def get_context_data(self, **kwargs):
+        print(f'\n----- entering {self.template_name} -----')
+
         context = super().get_context_data(**kwargs)
 
         league = League.objects.get(name=kwargs['league'])
@@ -69,17 +72,14 @@ class RankingsView(BaseView):
         context = super().get_context_data(**kwargs)
 
         scores = PlayerScore.objects.filter(season=context['season']).select_related('player').order_by('-score')
-        picks = Pick.objects.filter(season=context['season']).select_related('player')
 
         players_scores = []
         for score in scores:
-            pick_set = picks.filter(player__name=score.player.name).select_related('team').order_by('pk')
             players_scores.append(
                 {
                     'player': score.player.name,
-                    'score': score.score,
-                    'picks': pick_set,
-                    'second_chance': score.second_chance,
+                    'score': f'{score.score:.1f}',
+                    'second_chance': f'{score.second_chance:.1f}',
                 }
             )
 
@@ -126,7 +126,7 @@ class StandingsView(BaseView):
                 'win_pct': team_record.win_pct,
                 'win_proj': f'{over_under_line.line + over_under_line.diff:.1f}',
                 'line': over_under_line.line,
-                'diff': over_under_line.diff
+                'diff': f'{over_under_line.diff:.1f}'
             })
 
         context['team_records'] = team_records1
@@ -152,8 +152,35 @@ class OverUnderLineView(BaseView):
         context = super().get_context_data(**kwargs)
 
         ou_lines = OverUnderLine.objects.filter(season=context['season']).select_related('team').order_by('-line')
+        pick_agg = Pick.objects.filter(season=context['season']).select_related('team').values('team__name', 'over').annotate( total=Count('over'))
 
-        context['ou_lines'] = ou_lines
+        pick_dict = {}
+        for pick in pick_agg:
+            team_name = pick['team__name']
+            if team_name not in pick_dict.keys():
+                pick_dict[team_name] = [0, 0]
+            
+            over_index = 0 if pick['over'] else 1
+            pick_dict[team_name][over_index] = pick['total']
+
+        ou_lines1 = []
+        for ou_line in ou_lines:
+            team_name = ou_line.team.name
+            over_count = 0
+            under_count = 0
+            if team_name in pick_dict.keys():
+                over_count = pick_dict[team_name][0]
+                under_count = pick_dict[team_name][1]
+
+            ou_lines1.append({
+                'team_name': team_name,
+                'line': ou_line.line,
+                'diff': f'{ou_line.diff:.1f}',
+                'over_count': over_count,
+                'under_count': under_count
+            })
+
+        context['ou_lines'] = ou_lines1
         context['url'] = 'over_under_lines'
 
         return context
@@ -218,13 +245,17 @@ class RankingsExtendedView(BaseView):
 
         players_scores = []
         for score in scores:
-            pick_set = picks.filter(player__name=score.player.name).select_related('team').order_by('pk')
+            pick_set = picks.filter(player__name=score.player.name).select_related('team').order_by('-points')
             players_scores.append(
                 {
                     'player': score.player.name,
-                    'score': score.score,
-                    'picks': pick_set,
-                    'second_chance': score.second_chance,
+                    'score': f'{score.score:.1f}',
+                    'picks': [{
+                        'team': pick.team,
+                        'points': f'{pick.points: .1f}',
+                        'over': 'O' if pick.over else 'U',
+                        } for pick in pick_set],
+                    'second_chance': f'{score.second_chance:.1f}',
                 }
             )
 
